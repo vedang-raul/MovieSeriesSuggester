@@ -32,7 +32,7 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     """ A simple root endpoint to check if the server is running. """
-    return {"status": "Movie Suggester API is running!"}
+    return {"status": "Movie Suggester is running!"}
 
 
 # THIS IS THE ENDPOINT YOU NEED TO ADD
