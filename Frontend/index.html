@@ -1,12 +1,26 @@
-<html>
-    <head>
-        <title>Movive/Series Suggestor</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Suggester</title>
+    <!-- Link to the external CSS file -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Link to the external JavaScript file, 'defer' ensures it runs after the HTML is parsed -->
+    <script src="script.js" defer></script>
+</head>
+<body>
 
-    </head>
-    <body>
-        <h1> Welcome to the Movie/Series suggestor</h1>
-        <h2> Find your next favorite movie here!!</h2>
-    </body>
+    <div class="container">
+        <h1>Movie/Series Suggester</h1>
+        <div class="search-container">
+            <input type="text" id="movieInput" placeholder="Enter a movie title...">
+            <button id="searchBtn">Search</button>
+        </div>
+        <div id="results">
+            <!-- Movie results will be dynamically inserted here by script.js -->
+        </div>
+    </div>
+
+</body>
 </html>
