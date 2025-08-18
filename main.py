@@ -38,6 +38,7 @@ def read_root():
 # THIS IS THE ENDPOINT YOU NEED TO ADD
 @app.get("/api/search/{movie_title}")
 async def search_movie(movie_title: str):
+    import time
     if not TMDB_API_KEY:
         raise HTTPException(status_code=500,detail="TMDB API key is not configured.")
     search_url= f"{TMDB_API_URL}/search/movie"
@@ -56,4 +57,20 @@ async def search_movie(movie_title: str):
             raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API{exc.response.text}") #Take the error msg sent from TMDB and show it to user
         except httpx.RequestError as exc: #This block catches errors when you couldn't connect to the API at all
             raise HTTPException(status_code=503,detail=f"Error connecting to TMDB API server{exc}")
+    # Retry code block in case of connection issues
+    attemps = 3 #How many times it try to fetch the data from the API
+    delay = 1   #how much time gap inbetween tries
+    for i in range(attemps):
+        try:
+            async with httpx.AsyncClient() as client:
+                response=client.get(search_url,params=params)
+                response.raise_for_status()
+                return response.json()
+        except httpx.RequestError as exc:
+            if i < attemps - 1: #If this is not the last attempt
+                time.sleep(delay)  # Wait before retrying
+                delay = delay * 2 #give breathing time to the api fetch request
+                continue
+            else:
+                raise HTTPException(sattus_code=503,detail=f"Error connecting to TMDB API server{exc}")
         
