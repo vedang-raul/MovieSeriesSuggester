@@ -148,3 +148,40 @@ async def unified_search(query: str):
             raise HTTPException(status_code=exc.response.status_code, detail=f"Error from TMDB API: {exc.response.text}")
         except httpx.RequestError as exc:
             raise HTTPException(status_code=503, detail=f"Error connecting to TMDB API server: {exc}")
+@app.get("/api/details/movie/{movie_id}")
+async def get_movie_details(movie_id : int):
+    if not TMDB_API_KEY:
+        raise HTTPException(status_code=500,detail="TMDB API key is not configured.")
+    det_url=f"{TMDB_API_URL}/movie/{movie_id}"
+    params={
+        "api_key": TMDB_API_KEY,
+        "language": "en-US"
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            response =await client.get(det_url,params=params)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=503,detail=f"Error connecting to TMDB API server: {exc}") 
+@app.get("/api/details/tv/{tv_id}")
+async def det_tv(tv_id: int):
+    if not TMDB_API_KEY:
+        raise HTTPException(status_code=500,details="TMDB key not configured")
+    det_url=f"{TMDB_API_URL}/tv/{tv_id}"
+    params={
+        "api_key": TMDB_API_KEY,
+        "language": "en-US"
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(det_url,params=params)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
+        
