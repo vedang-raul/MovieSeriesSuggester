@@ -2,6 +2,7 @@
 const searchBtn = document.getElementById('searchBtn');
 const movieInput = document.getElementById('movieInput');
 const resultsDiv = document.getElementById('results');
+const loader= document.getElementById('loader');
 
 
 // --- 2. Add an event listener for the button click ---
@@ -13,6 +14,7 @@ movieInput.addEventListener('keyup', function(event) {
         searchMovies();
     }
 });
+
 
 // --- 3. The main function to fetch and display movies ---
 async function searchMovies() {
@@ -47,6 +49,31 @@ async function searchMovies() {
         console.error('Fetch error:', error);
         // Display a user-friendly error message on the page
         resultsDiv.innerHTML = `<p class="error-message">Oops! ${error.message}</p>`;
+    }
+}
+async function Pop_movies(){
+    loader.style.display = 'block';
+    resultsDiv.innerHTML = '';
+    try
+    {
+    const url = `http://127.0.0.1:8000/api/popular`;
+    const response= await fetch(url);
+    if(!response.ok){
+         const errorData = await response.json();
+        // Use the detail message from our FastAPI error
+        throw new Error(errorData.detail || 'Something went wrong on the server.');
+  
+    }
+    const data = await response.json();
+    // Call the display function with the fetched data
+    displayResults(data.results);
+}catch (error) {
+        console.error('Fetch error:', error);
+        // Display a user-friendly error message on the page
+        resultsDiv.innerHTML = `<p class="error-message">Oops! ${error.message}</p>`;
+    }
+    finally {
+        loader.style.display = 'none';
     }
 }
 
@@ -90,3 +117,4 @@ function displayResults(movies) {
         resultsDiv.appendChild(movieCard);
     });
 }
+document.addEventListener('DOMContentLoaded', Pop_movies); 

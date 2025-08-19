@@ -75,4 +75,23 @@ async def search_movie(movie_title: str):
             else:
                 print("All attemps failed.")
                 raise HTTPException(sattus_code=503,detail=f"Error connecting to TMDB API server{exc}")
- 
+@app.get("/api/popular")
+async def show_pop_movies():
+    # This endpoint fetches popular movies from TMDB
+    if not TMDB_API_KEY:
+        raise HTTPException(status_code=500,detail=f"TMDB API key is not configured.")
+    url=f"{TMDB_API_URL}/movie/popular"
+    params={
+        "api_key": TMDB_API_KEY,
+        "language": "en-US",
+        "page":1
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            response= await client.get(url,params=params)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=exc.response.status_code,detail=f"Error connecting to the TMDB API: {exc.response.text}")
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=503,detail=f"Error connecting to the TMDB API server: {exc}")
