@@ -170,7 +170,7 @@ async def get_movie_details(movie_id : int):
 async def det_tv(tv_id: int):
     if not TMDB_API_KEY:
         raise HTTPException(status_code=500,details="TMDB key not configured")
-    det_url=f"{TMDB_API_URL}/search/tv/{tv_id}"
+    det_url=f"{TMDB_API_URL}/tv/{tv_id}"
     params={
         "api_key": TMDB_API_KEY,
         "language": "en-US"
