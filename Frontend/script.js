@@ -3,6 +3,7 @@ const searchBtn = document.getElementById('searchBtn');
 const movieInput = document.getElementById('movieInput');
 const resultsDiv = document.getElementById('results');
 
+
 // --- 2. Add an event listener for the button click ---
 searchBtn.addEventListener('click', searchMovies);
 
@@ -24,7 +25,7 @@ async function searchMovies() {
     }
     
     // Show a loading spinner
-    resultsDiv.innerHTML = '<div class="loading-spinner"></div>';
+    resultsDiv.innerHTML = '<div class="loader"></div>';
 
     try {
         // Construct the URL for our FastAPI backend, encoding the title to handle spaces and special characters
