@@ -106,40 +106,6 @@ async def search_series(query:str):
             raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API{exc.response.text}") #Take the error msg sent from TMDB and show it to user
         except httpx.RequestError as exc: #This block catches errors when you couldn't connect to the API at all
             raise HTTPException(status_code=503,detail=f"Error connecting to TMDB API server{exc}")
-@app.get("/api/unified_search/{query}")
-async def unified_search(query: str):
-    
-    if not TMDB_READ_ACCESS_TOKEN:
-        raise HTTPException(status_code=500, detail="TMDB READ ACCESS TOKEN key is not configured.")
-    search_movie = f"{TMDB_API_URL}/search/movie"
-    search_series= f"{TMDB_API_URL}/search/tv"
-    headers = {
-        "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}",
-        "accept": "application/json"
-    }
-    params={
-        "query": query,
-        "language": "en-US"
-    }
-    async with httpx.AsyncClient() as client:
-        try:
-            movie_search= client.get(search_movie,headers=headers, params=params)   #Initiating a search in the movies DB simultaneously
-            series_search= client.get(search_series,headers=headers, params=params) #Initiating a search in the series DB simultaneously
-
-
-            
-            movie_response, series_response = await asyncio.gather(movie_search, series_search)
-            movie_response.raise_for_status()  # Raise an error for bad responses
-            series_response.raise_for_status()  # Raise an error for bad responses
-
-            movie_results = movie_response.json().get("results",[]) #results is basically a parameter that TMDB API uses to return the results 
-            series_results = series_response.json().get("results",[])#what .get() does is that it returns the value of the key "results" if it exists, otherwise it returns an empty list i.e []
-            combined_results= movie_results + series_results #Combining the results of both movie and series searches
-            return{"results":combined_results}
-        except httpx.HTTPStatusError as exc:
-            raise HTTPException(status_code=exc.response.status_code, detail=f"Error from TMDB API: {exc.response.text}")
-        except httpx.RequestError as exc:
-            raise HTTPException(status_code=503, detail=f"Error connecting to TMDB API server: {exc}")
 @app.get("/api/details/movie/{movie_id}")
 async def get_movie_details(movie_id : int):
     if not TMDB_READ_ACCESS_TOKEN:
