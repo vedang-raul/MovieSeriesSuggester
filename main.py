@@ -148,4 +148,43 @@ async def det_tv(tv_id: int):
             raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
         except httpx.RequestError as exc:
             raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
+@app.get("/api/movie/{movie_id}")
+async def movie_detail(movie_id: int):
+    if not TMDB_READ_ACCESS_TOKEN:
+        raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN key is not configured.")
+    det_url= f"{TMDB_API_URL}/movie/{movie_id}"
+    headers={
+        "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}",
+        "accept": "application/json"
+    }
+    params={
+        "language": "en-US"
+    }
+    async with httpx.AsyncClient() as client:
+        try:
         
+            response = await client.get(det_url,headers=headers,params=params)
+            response.raise_for_status()
+            data= response.json()
+            genres=", ".join([genre["name"] for genre in data.get("genres",[])])
+            budget=f"${data.get("budget",0):,}" if data.get("budget") else "N/A"
+            revenue=f"${data.get("revenue", 0):,}" if data.get("revenue") else "N/A"
+
+            details={
+                "title": data.get("title"),
+                "overview": data.get("overview"),
+                "release_date": data.get("release_date"),
+                "genres": genres,
+                "runtime": f"{data.get('runtime')} minutes" if data.get("runtime") else "N/A",
+                "budget": budget,
+                "revenue": revenue,
+                "vote_average": data.get("vote_average"),
+                "vote_count": data.get("vote_count")
+
+            }
+            return details
+            
+        except httpx.HTTPStatusError as exc:
+           raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
+        except httpx.RequestError as exc:
+           raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
