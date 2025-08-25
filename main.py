@@ -106,48 +106,7 @@ async def search_series(query:str):
             raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API{exc.response.text}") #Take the error msg sent from TMDB and show it to user
         except httpx.RequestError as exc: #This block catches errors when you couldn't connect to the API at all
             raise HTTPException(status_code=503,detail=f"Error connecting to TMDB API server{exc}")
-@app.get("/api/details/movie/{movie_id}")
-async def get_movie_details(movie_id : int):
-    if not TMDB_READ_ACCESS_TOKEN:
-        raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN key is not configured.")
-    det_url= f"{TMDB_API_URL}/movie/{movie_id}"
-    headers = {
-        "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}",
-        "accept": "application/json"
-    }
-    params={
-        "language": "en-US"
-    }
-    async with httpx.AsyncClient() as client:
-        try:
-            response =await client.get(det_url,headers=headers,params=params)
-            response.raise_for_status()
-            return response.json()
-        except httpx.HTTPStatusError as exc:
-            raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
-        except httpx.RequestError as exc:
-            raise HTTPException(status_code=503,detail=f"Error connecting to TMDB API server: {exc}") 
-@app.get("/api/details/tv/{tv_id}")
-async def det_tv(tv_id: int):
-    if not TMDB_READ_ACCESS_TOKEN:
-        raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN key is not configured.")
-    det_url= f"{TMDB_API_URL}/tv/{tv_id}"
-    headers={
-        "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}",
-        "accept": "application/json"        
-    }
-    params={
-        "language": "en-US"
-    }
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(det_url,headers=headers,params=params)
-            response.raise_for_status()
-            return response.json()
-        except httpx.HTTPStatusError as exc:
-            raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
-        except httpx.RequestError as exc:
-            raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
+
 @app.get("/api/movie/{movie_id}")
 async def movie_detail(movie_id: int):
     if not TMDB_READ_ACCESS_TOKEN:
