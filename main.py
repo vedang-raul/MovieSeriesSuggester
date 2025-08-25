@@ -166,9 +166,9 @@ async def movie_detail(movie_id: int):
             response = await client.get(det_url,headers=headers,params=params)
             response.raise_for_status()
             data= response.json()
-            genres=", ".join([genre["name"] for genre in data.get("genres",[])])
-            budget=f"${data.get("budget",0):,}" if data.get("budget") else "N/A"
-            revenue=f"${data.get("revenue", 0):,}" if data.get("revenue") else "N/A"
+            genres=", ".join([genre["name"] for genre in data.get("genres",[])])  #it appends genres with a comma and if nothing is there in genres it returns an empty list
+            budget=f"${data.get("budget",0):,}" if data.get("budget") else "N/A"  #adds a $ and a comma in appropriate places if budget is there else returns N/A
+            revenue=f"${data.get("revenue", 0):,}" if data.get("revenue") else "N/A" #adds a $ and a comma in appropriate places if revenue is there else returns N/A
 
             details={
                 "title": data.get("title"),
