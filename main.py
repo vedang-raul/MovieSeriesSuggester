@@ -138,7 +138,8 @@ async def movie_detail(movie_id: int):
                 "budget": budget,
                 "revenue": revenue,
                 "vote_average": data.get("vote_average"),
-                "vote_count": data.get("vote_count")
+                "vote_count": data.get("vote_count"),
+                "poster_path": f"https://image.tmdb.org/t/p/w500{data.get('poster_path')}" if data.get("poster_path") else None
 
             }
             return details

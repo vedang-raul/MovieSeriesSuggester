@@ -4,6 +4,8 @@ const movieInput = document.getElementById('movieInput');
 const resultsDiv = document.getElementById('results');
 const loader= document.getElementById('loader');
 const errorMessageDiv = document.getElementById('error-message');
+const modalContainer = document.getElementById('modal-container');
+
 
 function showErr(message) {
     errorMessageDiv.innerHTML = `
@@ -138,7 +140,57 @@ function displayResults(movies) {
         `;
 
         // Add the new card to the results div
+        movieCard.addEventListener('click', () => fetchMovieDetails(movie.id));
         resultsDiv.appendChild(movieCard);
+    });
+}
+async function fetchMovieDetails(movieId) {
+    loader.innerHTML = '<div class="loading-spinner"></div>';
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/movie/${movieId}`);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Could not fetch details.');
+        }
+        const details = await response.json();
+        displayModal(details); // Call the function to show the pop-up
+    } catch (error) {
+        console.error('Fetch details error:', error);
+        showErr(error.message);
+    } finally {
+        loader.innerHTML = '';
+    }
+}
+function displayModal(details) {
+    const posterBaseUrl = 'https://image.tmdb.org/t/p/w500';
+    const posterUrl = details.poster_path ? posterBaseUrl + details.poster_path : 'https://placehold.co/500x750/1e1e1e/86fccb?text=No+Image';
+
+    modalContainer.innerHTML = `
+        <div class="modal-backdrop">
+            <div class="modal-content">
+                <button class="modal-close">&times;</button>
+                <img src="${posterUrl}" alt="Poster for ${details.title}">
+                <div class="modal-info">
+                    <h2>${details.title}</h2>
+                    <p class="tagline"><em>${details.tagline || ''}</em></p>
+                    <p>${details.overview || 'No overview available.'}</p>
+                    <div class="trivia">
+                        <p><strong>Genres:</strong> ${details.genres}</p>
+                        <p><strong>Runtime:</strong> ${details.runtime}</p>
+                        <p><strong>Budget:</strong> ${details.budget}</p>
+                        <p><strong>Revenue:</strong> ${details.revenue}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add event listeners to close the modal
+    const closeModal = () => modalContainer.innerHTML = '';
+    modalContainer.querySelector('.modal-close').addEventListener('click', closeModal);
+    modalContainer.querySelector('.modal-backdrop').addEventListener('click', (e) => {
+        // Only close if the click is on the backdrop itself, not the content
+        if (e.target === e.currentTarget) closeModal();
     });
 }
 document.addEventListener('DOMContentLoaded', Pop_movies); 
