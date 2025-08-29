@@ -6,7 +6,7 @@ const loader= document.getElementById('loader');
 const errorMessageDiv = document.getElementById('error-message');
 const modalContainer = document.getElementById('modal-container');
 
-
+const BaseUrl="https://cinematch-ptzm.onrender.com";
 function showErr(message) {
     errorMessageDiv.innerHTML = `
         <div class="error">
@@ -57,7 +57,7 @@ async function searchMovies() {
 
     try {
         // Construct the URL for our FastAPI backend, encoding the title to handle spaces and special characters
-        const url = `http://127.0.0.1:8000/api/search/${encodeURIComponent(movieTitle)}`;
+        const url = `${BaseUrl}/api/search/${encodeURIComponent(movieTitle)}`;
         
         const response = await fetch(url);
 
@@ -82,7 +82,7 @@ async function Pop_movies(){
     resultsDiv.innerHTML = '';
     try
     {
-    const url = `http://127.0.0.1:8000/api/popular`;
+    const url = `${BaseUrl}/api/popular`;
     const response= await fetch(url);
     if(!response.ok){
          const errorData = await response.json();
@@ -147,7 +147,7 @@ function displayResults(movies) {
 async function fetchMovieDetails(movieId) {
     loader.innerHTML = '<div class="loading-spinner"></div>';
     try {
-        const response = await fetch(`http://127.0.0.1:8000/api/movie/${movieId}`);
+        const response = await fetch(`${BaseUrl}/api/movie/${movieId}`);
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.detail || 'Could not fetch details.');
