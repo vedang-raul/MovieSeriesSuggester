@@ -5,6 +5,8 @@ const resultsDiv = document.getElementById('results');
 const loader= document.getElementById('loader');
 const errorMessageDiv = document.getElementById('error-message');
 const modalContainer = document.getElementById('modal-container');
+const searchTypeToggle = document.getElementById('search-type-toggle'); // The new toggle switch
+
 
 const BaseUrl="https://cinematch-ptzm.onrender.com";
 function showErr(message) {
@@ -32,23 +34,23 @@ function showErr(message) {
 
 
 // --- 2. Add an event listener for the button click ---
-searchBtn.addEventListener('click', searchMovies);
+searchBtn.addEventListener('click', searchtitles);
 
 // Allow pressing 'Enter' in the input field to trigger a search
 movieInput.addEventListener('keyup', function(event) {
     if (event.key === 'Enter') {
-        searchMovies();
+        searchtitles();
     }
 });
 
 
 // --- 3. The main function to fetch and display movies ---
-async function searchMovies() {
-    const movieTitle = movieInput.value.trim();
+async function searchtitles() {
+    const query = movieInput.value.trim();
 
     // Don't search if the input is empty
-    if (movieTitle === "") {
-        showErr('Please enter a movie title to search.');
+    if (query === "") {
+        showErr('Please enter a title to search.');
         return;
     }
     
@@ -57,7 +59,8 @@ async function searchMovies() {
 
     try {
         // Construct the URL for our FastAPI backend, encoding the title to handle spaces and special characters
-        const url = `${BaseUrl}/api/search/${encodeURIComponent(movieTitle)}`;
+        const searchType = searchTypeToggle.checked ? 'tv' : 'movie';
+        const url = `${BaseUrl}/api/search/${searchType}/${encodeURIComponent(query)}`;
         
         const response = await fetch(url);
 
@@ -75,6 +78,8 @@ async function searchMovies() {
         console.error('Fetch error:', error);
         // Display a user-friendly error message on the page
         showErr(`Oops !${error.message}`);    
+    } finally {
+        loader.style.display = 'none'; // Hide loader when done
     }
 }
 async function Pop_movies(){
@@ -104,11 +109,11 @@ async function Pop_movies(){
 }
 
 // --- 4. Function to display the results in the resultsDiv ---
-function displayResults(movies) {
+function displayResults(titles) {
     // Clear previous results or loading spinner
     resultsDiv.innerHTML = '';
 
-    if (movies.length === 0) {
+    if (titles.length === 0) {
         resultsDiv.innerHTML = '<p>No movies found for that title.</p>';
         return;
     }
@@ -116,25 +121,24 @@ function displayResults(movies) {
     // The base URL for all TMDB poster images
     const posterBaseUrl = 'https://image.tmdb.org/t/p/w500';
 
-    movies.forEach(movie => {
+    titles.forEach(title => {
         // Create a new div for each movie
-        const movieCard = document.createElement('div');
-        movieCard.className = 'movie-card';
-
+        const titleCard = document.createElement('div');
+        titleCard.className = 'title-card';
         // Pull out the specific data we want from the movie object
-        const title = movie.title;
-        const releaseDate = movie.release_date || 'N/A';
-        const overview = movie.overview ? movie.overview.substring(0, 150) + '...' : 'No overview available.';
+        const title = movie.title || titles.original_name
+        const releaseDate = movie.release_date ||  'N/A';
+        const overview = title.overview ? title.overview.substring(0, 150) + '...' : 'No overview available.';
         
         // Build the full poster URL. Use a placeholder if no poster is available.
-        const posterUrl = movie.poster_path 
-            ? posterBaseUrl + movie.poster_path 
+        const posterUrl = title.poster_path 
+            ? posterBaseUrl + titles.poster_path 
             : 'https://placehold.co/500x750/1e1e1e/bb86fc?text=No+Image';
 
         // Populate the card with movie info, including the poster image
-        movieCard.innerHTML = `
+        titleCard.innerHTML = `
             <img src="${posterUrl}" alt="Poster for ${title}">
-            <h2>${title}</h2>
+            <h2>${title || original_name}</h2>
             <p><strong>Release Date:</strong> ${releaseDate}</p>
             <p>${overview}</p>
         `;
@@ -161,9 +165,32 @@ async function fetchMovieDetails(movieId) {
         loader.innerHTML = '';
     }
 }
-function displayModal(details) {
+function displayModal(details, mediaType) {
     const posterBaseUrl = 'https://image.tmdb.org/t/p/w500';
     const posterUrl = details.poster_path ? posterBaseUrl + details.poster_path : 'https://placehold.co/500x750/1e1e1e/86fccb?text=No+Image';
+
+    let detailsHtml = '';
+
+    if (mediaType === 'movie') {
+        detailsHtml = `
+            <p><strong>Original Title:</strong> ${details.original_title}</p>
+            <p><strong>Genres:</strong> ${details.genres}</p>
+            <p><strong>Runtime:</strong> ${details.runtime}</p>
+            <p><strong>Budget:</strong> ${details.budget}</p>
+            <p><strong>Revenue:</strong> ${details.revenue}</p>
+        `;
+    } else { // It's a TV show
+        detailsHtml = `
+            <p><strong>Original Name:</strong> ${details.original_name}</p>
+            <p><strong>Genres:</strong> ${details.genres}</p>
+            <p><strong>First Aired:</strong> ${details.first_air_date}</p>
+            <p><strong>Last Aired:</strong> ${details.last_air_date}</p>
+            <p><strong>Seasons:</strong> ${details.number_of_seasons}</p>
+            <p><strong>Episodes:</strong> ${details.number_of_episodes}</p>
+            <p><strong>Status:</strong> ${details.status}</p>
+            <p><strong>Created By:</strong> ${details.creators}</p>
+        `;
+    }
 
     modalContainer.innerHTML = `
         <div class="modal-backdrop">
@@ -175,10 +202,7 @@ function displayModal(details) {
                     <p class="tagline"><em>${details.tagline || ''}</em></p>
                     <p>${details.overview || 'No overview available.'}</p>
                     <div class="trivia">
-                        <p><strong>Genres:</strong> ${details.genres}</p>
-                        <p><strong>Runtime:</strong> ${details.runtime}</p>
-                        <p><strong>Budget:</strong> ${details.budget}</p>
-                        <p><strong>Revenue:</strong> ${details.revenue}</p>
+                        ${detailsHtml}
                     </div>
                 </div>
             </div>
@@ -189,7 +213,6 @@ function displayModal(details) {
     const closeModal = () => modalContainer.innerHTML = '';
     modalContainer.querySelector('.modal-close').addEventListener('click', closeModal);
     modalContainer.querySelector('.modal-backdrop').addEventListener('click', (e) => {
-        // Only close if the click is on the backdrop itself, not the content
         if (e.target === e.currentTarget) closeModal();
     });
 }

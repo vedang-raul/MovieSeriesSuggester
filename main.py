@@ -40,7 +40,7 @@ def read_root():
 
 
 # THIS IS THE ENDPOINT YOU NEED TO ADD
-@app.get("/api/search/{movie_title}")
+@app.get("/api/search/movie/{movie_title}")
 async def search_movie(movie_title: str):
     if not TMDB_READ_ACCESS_TOKEN:
         raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN key is not configured.")
