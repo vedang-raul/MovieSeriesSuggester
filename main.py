@@ -150,3 +150,43 @@ async def movie_detail(movie_id: int):
            raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
         except httpx.RequestError as exc:
            raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
+@app.get("/api/tv/{tv_id}")
+async def movie_detail(tv_id: int):
+    if not TMDB_READ_ACCESS_TOKEN:
+        raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN key is not configured.")
+    det_url= f"{TMDB_API_URL}/tv/{tv_id}"
+    headers={
+        "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}",
+        "accept": "application/json"
+    }
+    params={
+        "language": "en-US"
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+        
+            response = await client.get(det_url,headers=headers,params=params)
+            response.raise_for_status()
+            data= response.json()
+            genres=", ".join([genre["name"] for genre in data.get("genres",[])])  #it appends genres with a comma and if nothing is there in genres it returns an empty list
+
+            details={
+                "original_name": data.get("original_name"),
+                "overview": data.get("overview"),
+                "first_air_date": data.get("first_air_date"),
+                "last_air_date": data.get("last_air_date"),
+                "status": data.get("status"),
+                "genres": genres,
+                "number_of_episodes": data.get("number_of_episodes"),
+                "number_of_seasons": data.get("number_of_seasons"),
+                "vote_average": data.get("vote_average"),
+                "vote_count": data.get("vote_count"),
+                "poster_path": f"https://image.tmdb.org/t/p/w500{data.get('poster_path')}" if data.get("poster_path") else None
+
+            }
+            return details
+            
+        except httpx.HTTPStatusError as exc:
+           raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
+        except httpx.RequestError as exc:
+           raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
