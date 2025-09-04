@@ -8,8 +8,8 @@ const modalContainer = document.getElementById('modal-container');
 const searchTypeToggle = document.getElementById('search-type-toggle'); // The new toggle switch
 
 
-const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-const BaseUrl = isLocal ? "http://localhost:8000" : "https://cinematch-ptzm.onrender.com";
+// const BaseUrl = "http://localhost:8000"   // For local testing, uncomment it when youre locally testing
+const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
 function showErr(message) {
     errorMessageDiv.innerHTML = `
         <div class="error">
