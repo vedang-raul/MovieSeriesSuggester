@@ -20,8 +20,8 @@ origins = [
     "http://localhost:8080",
     "http://127.0.0.1:5500",
     "null",
-    "https://alphaexile4154.github.io",
-    "https://alphaexile4154.github.io/MovieSeriesSuggester"
+    "https://vedang-raul.github.io",
+    "https://vedang-raul.github.io/MovieSeriesSuggester"
 ]
 app.add_middleware(
     CORSMiddleware,
