@@ -39,9 +39,9 @@ def read_root():
     return {"status": "Movie Suggester is running!"}
 
 
-# THIS IS THE ENDPOINT YOU NEED TO ADD
-@app.get("/api/search/movie/{movie_title}")
-async def search_movie(movie_title: str):
+
+@app.get("/api/search/movie/{query}")
+async def search_movie(query: str):
     if not TMDB_READ_ACCESS_TOKEN:
         raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN key is not configured.")
     search_url= f"{TMDB_API_URL}/search/movie"
@@ -50,7 +50,7 @@ async def search_movie(movie_title: str):
         "accept": "application/json"
     }
     params={
-        "query":movie_title
+        "query":query
         }
     async with httpx.AsyncClient() as client: #This line create a fresh request page with is sent to the API
         try:
@@ -141,7 +141,8 @@ async def movie_detail(movie_id: int):
                 "revenue": revenue,
                 "vote_average": data.get("vote_average"),
                 "vote_count": data.get("vote_count"),
-                "poster_path": f"https://image.tmdb.org/t/p/w500{data.get('poster_path')}" if data.get("poster_path") else None
+                "poster_path": f"https://image.tmdb.org/t/p/w500{data.get('poster_path')}" if data.get("poster_path") else None,
+                
 
             }
             return details
@@ -151,7 +152,7 @@ async def movie_detail(movie_id: int):
         except httpx.RequestError as exc:
            raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
 @app.get("/api/tv/{tv_id}")
-async def movie_detail(tv_id: int):
+async def tv_detail(tv_id: int):
     if not TMDB_READ_ACCESS_TOKEN:
         raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN key is not configured.")
     det_url= f"{TMDB_API_URL}/tv/{tv_id}"
@@ -169,7 +170,7 @@ async def movie_detail(tv_id: int):
             response.raise_for_status()
             data= response.json()
             genres=", ".join([genre["name"] for genre in data.get("genres",[])])  #it appends genres with a comma and if nothing is there in genres it returns an empty list
-
+            creators=", ".join([creator["name"] for creator in data.get("created_by",[])])  #it appends genres with a comma and if nothing is there in genres it returns an empty list
             details={
                 "original_name": data.get("original_name"),
                 "overview": data.get("overview"),
@@ -181,6 +182,7 @@ async def movie_detail(tv_id: int):
                 "number_of_seasons": data.get("number_of_seasons"),
                 "vote_average": data.get("vote_average"),
                 "vote_count": data.get("vote_count"),
+                "creators": creators,
                 "poster_path": f"https://image.tmdb.org/t/p/w500{data.get('poster_path')}" if data.get("poster_path") else None
 
             }
