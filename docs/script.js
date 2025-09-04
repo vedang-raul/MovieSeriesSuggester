@@ -1,12 +1,15 @@
 // --- 1. Get references to our HTML elements ---
 const searchBtn = document.getElementById('searchBtn');
-const movieInput = document.getElementById('movieInput');
+const titleInput = document.getElementById('titleInput');
 const resultsDiv = document.getElementById('results');
 const loader= document.getElementById('loader');
 const errorMessageDiv = document.getElementById('error-message');
 const modalContainer = document.getElementById('modal-container');
+const searchTypeToggle = document.getElementById('search-type-toggle'); // The new toggle switch
 
-const BaseUrl="https://cinematch-ptzm.onrender.com";
+
+const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const BaseUrl = isLocal ? "http://localhost:8000" : "https://cinematch-ptzm.onrender.com";
 function showErr(message) {
     errorMessageDiv.innerHTML = `
         <div class="error">
@@ -32,23 +35,23 @@ function showErr(message) {
 
 
 // --- 2. Add an event listener for the button click ---
-searchBtn.addEventListener('click', searchMovies);
+searchBtn.addEventListener('click', searchtitles);
 
 // Allow pressing 'Enter' in the input field to trigger a search
-movieInput.addEventListener('keyup', function(event) {
+titleInput.addEventListener('keyup', function(event) {
     if (event.key === 'Enter') {
-        searchMovies();
+        searchtitles();
     }
 });
 
 
 // --- 3. The main function to fetch and display movies ---
-async function searchMovies() {
-    const movieTitle = movieInput.value.trim();
+async function searchtitles() {
+    const query = titleInput.value.trim();
 
     // Don't search if the input is empty
-    if (movieTitle === "") {
-        showErr('Please enter a movie title to search.');
+    if (query === "") {
+        showErr('Please enter a title to search.');
         return;
     }
     
@@ -57,8 +60,10 @@ async function searchMovies() {
 
     try {
         // Construct the URL for our FastAPI backend, encoding the title to handle spaces and special characters
-        const url = `${BaseUrl}/api/search/${encodeURIComponent(movieTitle)}`;
+        const searchType = searchTypeToggle.checked ? 'tv' : 'movie';
+        const url = `${BaseUrl}/api/search/${searchType}/${encodeURIComponent(query)}`;
         
+        console.log('Fetching URL:', url);
         const response = await fetch(url);
 
         // Check if the server responded with an error (like 404 or 503)
@@ -69,12 +74,14 @@ async function searchMovies() {
         }
 
         const data = await response.json();
-        displayResults(data.results);
+        displayResults(data.results,searchType);
 
     } catch (error) {
         console.error('Fetch error:', error);
         // Display a user-friendly error message on the page
         showErr(`Oops !${error.message}`);    
+    } finally {
+        loader.style.display = 'none'; // Hide loader when done
     }
 }
 async function Pop_movies(){
@@ -92,7 +99,7 @@ async function Pop_movies(){
     }
     const data = await response.json();
     // Call the display function with the fetched data
-    displayResults(data.results);
+    displayResults(data.results,searchType='movie');
 }catch (error) {
         console.error('Fetch error:', error);
         // Display a user-friendly error message on the page
@@ -104,11 +111,11 @@ async function Pop_movies(){
 }
 
 // --- 4. Function to display the results in the resultsDiv ---
-function displayResults(movies) {
+function displayResults(titles,searchType) {
     // Clear previous results or loading spinner
     resultsDiv.innerHTML = '';
 
-    if (movies.length === 0) {
+    if (titles.length === 0) {
         resultsDiv.innerHTML = '<p>No movies found for that title.</p>';
         return;
     }
@@ -116,23 +123,22 @@ function displayResults(movies) {
     // The base URL for all TMDB poster images
     const posterBaseUrl = 'https://image.tmdb.org/t/p/w500';
 
-    movies.forEach(movie => {
+    titles.forEach(item => {
         // Create a new div for each movie
-        const movieCard = document.createElement('div');
-        movieCard.className = 'movie-card';
-
+        const titleCard = document.createElement('div');
+        titleCard.className = 'title-card';
         // Pull out the specific data we want from the movie object
-        const title = movie.title;
-        const releaseDate = movie.release_date || 'N/A';
-        const overview = movie.overview ? movie.overview.substring(0, 150) + '...' : 'No overview available.';
+        const title = item.title || item.original_name
+        const releaseDate = item.release_date || item.first_air_date || 'N/A';
+        const overview = item.overview ? item.overview.substring(0, 150) + '...' : 'No overview available.';
         
         // Build the full poster URL. Use a placeholder if no poster is available.
-        const posterUrl = movie.poster_path 
-            ? posterBaseUrl + movie.poster_path 
+        const posterUrl = item.poster_path 
+            ? posterBaseUrl + item.poster_path 
             : 'https://placehold.co/500x750/1e1e1e/bb86fc?text=No+Image';
 
         // Populate the card with movie info, including the poster image
-        movieCard.innerHTML = `
+        titleCard.innerHTML = `
             <img src="${posterUrl}" alt="Poster for ${title}">
             <h2>${title}</h2>
             <p><strong>Release Date:</strong> ${releaseDate}</p>
@@ -140,56 +146,128 @@ function displayResults(movies) {
         `;
 
         // Add the new card to the results div
-        movieCard.addEventListener('click', () => fetchMovieDetails(movie.id));
-        resultsDiv.appendChild(movieCard);
+        titleCard.addEventListener('click', () => fetchtitleDetails(item.id,searchType));
+        resultsDiv.appendChild(titleCard);
     });
 }
-async function fetchMovieDetails(movieId) {
-    loader.innerHTML = '<div class="loading-spinner"></div>';
+// async function fetchtitleDetails(titleId,searchType) {
+//     loader.innerHTML = '<div class="loading-spinner"></div>';
+//     try {
+//         const response = await fetch(`${BaseUrl}/api/${searchType}/${titleId}`);
+//         if (!response.ok) {
+//             const errorData = await response.json();
+//             throw new Error(errorData.detail || 'Could not fetch details.');
+//         }
+//         const details = await response.json();
+//         displayModal(details,searchType,cast); // Call the function to show the pop-up
+//     } catch (error) {
+//         console.error('Fetch details error:', error);
+//         showErr(error.message);
+//     } finally {
+//         loader.innerHTML = '';
+//     }
+// }
+async function fetchtitleDetails(titleId, searchType) {
+    loader.style.display = 'block';
+    resultsDiv.style.display = 'none'; // Hide results while modal is potentially loading
+
     try {
-        const response = await fetch(`${BaseUrl}/api/movie/${movieId}`);
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || 'Could not fetch details.');
+        const detailsUrl = `${BaseUrl}/api/${searchType}/${titleId}`;
+        const creditsUrl = `${BaseUrl}/api/${searchType}/${titleId}/credits`;
+
+        // Use Promise.all to fetch both endpoints at the same time
+        const [detailsResponse, creditsResponse] = await Promise.all([
+            fetch(detailsUrl),
+            fetch(creditsUrl)
+        ]);
+
+        if (!detailsResponse.ok || !creditsResponse.ok) {
+            throw new Error('Could not fetch all details for this title.');
         }
-        const details = await response.json();
-        displayModal(details); // Call the function to show the pop-up
+
+        const details = await detailsResponse.json();
+        const credits = await creditsResponse.json();
+        
+        // Pass all data to the modal
+        displayModal(details, credits,searchType); 
     } catch (error) {
         console.error('Fetch details error:', error);
         showErr(error.message);
     } finally {
-        loader.innerHTML = '';
+        loader.style.display = 'none';
+        resultsDiv.style.display = 'grid'; // Show results again
     }
 }
-function displayModal(details) {
-    const posterBaseUrl = 'https://image.tmdb.org/t/p/w500';
-    const posterUrl = details.poster_path ? posterBaseUrl + details.poster_path : 'https://placehold.co/500x750/1e1e1e/86fccb?text=No+Image';
+function displayModal(details,credits,searchType) {
+    const posterUrl = details.poster_path || 'https://placehold.co/500x750/1e1e1e/86fccb?text=No+Image';
+
+    let detailsHtml = '';
+
+    if (searchType === 'movie') {
+        detailsHtml = `
+            <p><strong>Genres:</strong> ${details.genres}</p>
+            <p><strong>Runtime:</strong> ${details.runtime}</p>
+            <p><strong>Budget:</strong> ${details.budget}</p>
+            <p><strong>Revenue:</strong> ${details.revenue}</p>
+        `;
+    } else { // It's a TV show
+        detailsHtml = `
+            <p><strong>Genres:</strong> ${details.genres}</p>
+            <p><strong>First Aired:</strong> ${details.first_air_date}</p>
+            <p><strong>Last Aired:</strong> ${details.last_air_date}</p>
+            <p><strong>Seasons:</strong> ${details.number_of_seasons}</p>
+            <p><strong>Episodes:</strong> ${details.number_of_episodes}</p>
+            <p><strong>Status:</strong> ${details.status}</p>
+            <p><strong>Created By:</strong> ${details.creators}</p>
+        `;
+    }
+    let creditsHtml = '';
+    let castList = credits; // Assume it's a proper array by default
+
+    // FIX: Check if 'cast' is a string that looks like an array, and if so, parse it.
+    if (typeof castList === 'string' && castList.startsWith('[')) {
+        try {
+            castList = JSON.parse(castList);
+        } catch (e) {
+            console.error("Could not parse cast string:", e);
+            castList = []; // Default to empty array on parsing error
+        }
+    }
+
+    // Final safety check to ensure castList is an array
+    if (!Array.isArray(castList)) {
+        castList = [];
+    }
+    if (castList.length > 0) {
+        creditsHtml += '<div class="cast-section"><h3>Top Cast</h3><ul class="cast-list">';
+        castList.forEach(member => {
+            creditsHtml += `<li>${member}</li>`;
+        });
+        creditsHtml += '</ul></div>';
+    }
 
     modalContainer.innerHTML = `
         <div class="modal-backdrop">
             <div class="modal-content">
                 <button class="modal-close">&times;</button>
-                <img src="${posterUrl}" alt="Poster for ${details.title}">
+                <img src="${posterUrl}" alt="Poster for ${details.title || details.original_name}">
                 <div class="modal-info">
-                    <h2>${details.title}</h2>
-                    <p class="tagline"><em>${details.tagline || ''}</em></p>
+                    <h2>${details.title || details.original_name}</h2>
                     <p>${details.overview || 'No overview available.'}</p>
                     <div class="trivia">
-                        <p><strong>Genres:</strong> ${details.genres}</p>
-                        <p><strong>Runtime:</strong> ${details.runtime}</p>
-                        <p><strong>Budget:</strong> ${details.budget}</p>
-                        <p><strong>Revenue:</strong> ${details.revenue}</p>
+                        ${detailsHtml}
                     </div>
+                    ${creditsHtml}
                 </div>
             </div>
         </div>
     `;
 
+
     // Add event listeners to close the modal
     const closeModal = () => modalContainer.innerHTML = '';
     modalContainer.querySelector('.modal-close').addEventListener('click', closeModal);
     modalContainer.querySelector('.modal-backdrop').addEventListener('click', (e) => {
-        // Only close if the click is on the backdrop itself, not the content
         if (e.target === e.currentTarget) closeModal();
     });
 }
