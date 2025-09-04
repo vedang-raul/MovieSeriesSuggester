@@ -192,3 +192,26 @@ async def tv_detail(tv_id: int):
            raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
         except httpx.RequestError as exc:
            raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
+@app.get("/api/tv/{tv_id}/credits")
+async def tv_credits(tv_id: int):
+    if not TMDB_READ_ACCESS_TOKEN:
+        raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN is not configured.")
+    url= f"{TMDB_API_URL}/tv/{tv_id}/credits"
+    headers={
+        "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}",
+    }
+    params={
+        "language": "en-US"
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url,headers=headers,params=params)
+            response.raise_for_status()
+            data= response.json()
+            cast = data.get('cast', [])
+            top_cast_names = [f"{member.get('name')} as {member.get('character')}" for member in cast[:4]]
+            return top_cast_names
+        except httpx.HTTPStatusError as exc:
+           raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
+        except httpx.RequestError as exc:
+           raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")

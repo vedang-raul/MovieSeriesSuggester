@@ -150,24 +150,55 @@ function displayResults(titles,searchType) {
         resultsDiv.appendChild(titleCard);
     });
 }
-async function fetchtitleDetails(titleId,searchType) {
-    loader.innerHTML = '<div class="loading-spinner"></div>';
+// async function fetchtitleDetails(titleId,searchType) {
+//     loader.innerHTML = '<div class="loading-spinner"></div>';
+//     try {
+//         const response = await fetch(`${BaseUrl}/api/${searchType}/${titleId}`);
+//         if (!response.ok) {
+//             const errorData = await response.json();
+//             throw new Error(errorData.detail || 'Could not fetch details.');
+//         }
+//         const details = await response.json();
+//         displayModal(details,searchType,cast); // Call the function to show the pop-up
+//     } catch (error) {
+//         console.error('Fetch details error:', error);
+//         showErr(error.message);
+//     } finally {
+//         loader.innerHTML = '';
+//     }
+// }
+async function fetchtitleDetails(titleId, searchType) {
+    loader.style.display = 'block';
+    resultsDiv.style.display = 'none'; // Hide results while modal is potentially loading
+
     try {
-        const response = await fetch(`${BaseUrl}/api/${searchType}/${titleId}`);
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || 'Could not fetch details.');
+        const detailsUrl = `${BaseUrl}/api/${searchType}/${titleId}`;
+        const creditsUrl = `${BaseUrl}/api/${searchType}/${titleId}/credits`;
+
+        // Use Promise.all to fetch both endpoints at the same time
+        const [detailsResponse, creditsResponse] = await Promise.all([
+            fetch(detailsUrl),
+            fetch(creditsUrl)
+        ]);
+
+        if (!detailsResponse.ok || !creditsResponse.ok) {
+            throw new Error('Could not fetch all details for this title.');
         }
-        const details = await response.json();
-        displayModal(details,searchType); // Call the function to show the pop-up
+
+        const details = await detailsResponse.json();
+        const credits = await creditsResponse.json();
+        
+        // Pass all data to the modal
+        displayModal(details, credits,searchType); 
     } catch (error) {
         console.error('Fetch details error:', error);
         showErr(error.message);
     } finally {
-        loader.innerHTML = '';
+        loader.style.display = 'none';
+        resultsDiv.style.display = 'grid'; // Show results again
     }
 }
-function displayModal(details, searchType) {
+function displayModal(details,credits,searchType) {
     const posterUrl = details.poster_path || 'https://placehold.co/500x750/1e1e1e/86fccb?text=No+Image';
 
     let detailsHtml = '';
@@ -190,6 +221,30 @@ function displayModal(details, searchType) {
             <p><strong>Created By:</strong> ${details.creators}</p>
         `;
     }
+    let creditsHtml = '';
+    let castList = credits; // Assume it's a proper array by default
+
+    // FIX: Check if 'cast' is a string that looks like an array, and if so, parse it.
+    if (typeof castList === 'string' && castList.startsWith('[')) {
+        try {
+            castList = JSON.parse(castList);
+        } catch (e) {
+            console.error("Could not parse cast string:", e);
+            castList = []; // Default to empty array on parsing error
+        }
+    }
+
+    // Final safety check to ensure castList is an array
+    if (!Array.isArray(castList)) {
+        castList = [];
+    }
+    if (castList.length > 0) {
+        creditsHtml += '<div class="cast-section"><h3>Top Cast</h3><ul class="cast-list">';
+        castList.forEach(member => {
+            creditsHtml += `<li>${member}</li>`;
+        });
+        creditsHtml += '</ul></div>';
+    }
 
     modalContainer.innerHTML = `
         <div class="modal-backdrop">
@@ -202,10 +257,12 @@ function displayModal(details, searchType) {
                     <div class="trivia">
                         ${detailsHtml}
                     </div>
+                    ${creditsHtml}
                 </div>
             </div>
         </div>
     `;
+
 
     // Add event listeners to close the modal
     const closeModal = () => modalContainer.innerHTML = '';
