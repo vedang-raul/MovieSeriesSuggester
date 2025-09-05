@@ -8,8 +8,8 @@ const modalContainer = document.getElementById('modal-container');
 const searchTypeToggle = document.getElementById('search-type-toggle'); // The new toggle switch
 
 
-const BaseUrl = "http://localhost:8000"   // For local testing, uncomment it when youre locally testing
-// const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
+// const BaseUrl = "http://localhost:8000"   // For local testing, uncomment it when youre locally testing
+const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
 function showErr(message) {
     errorMessageDiv.innerHTML = `
         <div class="error">
@@ -177,21 +177,22 @@ async function fetchtitleDetails(titleId, searchType) {
         const watchtitleurl= `${BaseUrl}/api/${searchType}/watch/${titleId}`;
 
         // Use Promise.all to fetch both endpoints at the same time
-        const [detailsResponse, creditsResponse] = await Promise.all([
+        const [detailsResponse, creditsResponse,watchresponse] = await Promise.all([
             fetch(detailsUrl),
             fetch(creditsUrl),
             fetch(watchtitleurl)
         ]);
 
-        if (!detailsResponse.ok || !creditsResponse.ok) {
+        if (!detailsResponse.ok || !creditsResponse.ok || !watchresponse.ok) {
             throw new Error('Could not fetch all details for this title.');
         }
 
         const details = await detailsResponse.json();
         const credits = await creditsResponse.json();
+        const watchproviders = await watchresponse.json();
         
         // Pass all data to the modal
-        displayModal(details, credits,searchType,watchtitleurl); 
+        displayModal(details, credits,searchType,watchproviders.providers); 
     } catch (error) {
         console.error('Fetch details error:', error);
         showErr(error.message);
@@ -200,7 +201,7 @@ async function fetchtitleDetails(titleId, searchType) {
         resultsDiv.style.display = 'grid'; // Show results again
     }
 }
-function displayModal(details,credits,searchType,watchtitleurl) {
+function displayModal(details,credits,searchType,watchproviders) {
     const posterUrl = details.poster_path || 'https://placehold.co/500x750/1e1e1e/86fccb?text=No+Image';
 
     let detailsHtml = '';
@@ -247,14 +248,19 @@ function displayModal(details,credits,searchType,watchtitleurl) {
         });
         creditsHtml += '</ul></div>';
     }
-    let watchtitleHtml = '';
-    let watchlist = watchtitleurl; // Assume it's a proper array by default
-    if (watchlist.length > 0) {
-        watchtitleHtml += '<div class="watchtitle-section"><h3>Watch On</h3><ul class="watchtitle">';
-        watchlist.forEach(provider => {
-            watchtitleHtml += `<li>${provider}</li>`;
+    let watchHtml = '';
+    if (watchproviders && watchproviders.length > 0) {
+        watchHtml += '<div class="watch-section"><h3>Where to Watch</h3><div class="provider-list">';
+        watchproviders.forEach(provider => {
+            watchHtml += `
+                <div class="provider-item">
+                    <img src="https://image.tmdb.org/t/p/w92${provider.logo_path}" alt="${provider.name} logo" title="${provider.name}">
+                </div>
+            `;
         });
-        watchtitleHtml += '</ul></div>';
+        watchHtml += '</div></div>';
+    } else {
+        watchHtml = '<div class="watch-section"><p>Not available for streaming in this region.</p></div>';
     }
 
 
@@ -270,6 +276,7 @@ function displayModal(details,credits,searchType,watchtitleurl) {
                         ${detailsHtml}
                     </div>
                     ${creditsHtml}
+                    ${watchHtml}
                 </div>
             </div>
         </div>
