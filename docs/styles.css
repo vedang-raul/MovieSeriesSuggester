@@ -20,42 +20,47 @@ body {
     height: auto;
 }
 
-h1 {
-    text-align: center;
-    color: #86fccb;
+/* --- Search and Toggle Controls --- */
+.search-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 40px;
 }
 
-/* --- NEW RETRO SEARCH BAR STYLES --- */
+/* --- RETRO SEARCH BAR STYLES --- */
 .input-container {
-    width: 250px; /* Increased width slightly */
+    width: 250px; 
     position: relative;
-    margin: 40px auto; /* Centered the search bar */
 }
 
 .icon {
     position: absolute;
     right: 10px;
-    top: calc(50% + 5px);
-    transform: translateY(calc(-50% - 5px));
-    cursor: pointer; /* Make it look clickable */
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
 }
 
 .input {
     width: 100%;
-    height: 40px;
+    height: 50px; /* Matched height with new toggle */
     padding: 10px;
     transition: .2s linear;
-    border: 2.5px solid #e0e0e0; /* Changed color for dark theme */
+    border: 2.5px solid #e0e0e0; 
     font-size: 14px;
     letter-spacing: 2px;
-    background-color: #181319; /* Added background color */
-    color: #e0e0e0; /* Added text color */
+    background-color: #181319; 
+    color: #e0e0e0; 
+    box-sizing: border-box;
 }
 
 .input:focus {
     outline: none;
-    border: 0.5px solid #e0e0e0; /* Changed color for dark theme */
-    box-shadow: -5px -5px 0px #86fccb; /* Changed shadow color to match theme */
+    border: 2.5px solid #86fccb; 
+    box-shadow: -5px -5px 0px #86fccb; 
 }
 
 .input-container:hover > .icon {
@@ -65,23 +70,24 @@ h1 {
 @keyframes anim {
     0%,
     100% {
-        transform: translateY(calc(-50% - 5px)) scale(1);
+        transform: translateY(-50%) scale(1);
     }
 
     50% {
-        transform: translateY(calc(-50% - 5px)) scale(1.1);
+        transform: translateY(-50%) scale(1.1);
     }
 }
-/* Making the SVG icon white for the dark theme */
+
 .icon svg path {
     stroke: #e0e0e0;
 }
+
+/* --- NEW 3D TOGGLE SWITCH STYLES --- */
 .toggle-container {
     display: flex;
     align-items: center;
     gap: 15px;
     color: #aaa;
-    transform: translateY(-35px);
 }
 .new-switch-container {
   display: flex;
@@ -101,6 +107,7 @@ h1 {
   cursor: pointer;
   position: relative;
   transition: transform 0.4s;
+  -webkit-tap-highlight-color: transparent; /* FIX: Removes blue tap highlight on mobile */
 }
 
 .label:hover {
@@ -142,14 +149,14 @@ h1 {
   transition: 0.4s;
 }
 
+
+/* --- RESULTS GRID --- */
 #results {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 20px;
-    /* NEW: Set results container as the positioning context */
     position: relative;
 }
-
 
 .title-card {
     background-color: #1e1e1e;
@@ -157,8 +164,8 @@ h1 {
     padding: 15px;
     border: 1px solid #333;
     text-align: center;
-    cursor: pointer;
     transition: transform 0.2s ease-in-out;
+    cursor: pointer;
 }
 
 .title-card:hover {
@@ -170,18 +177,22 @@ h1 {
     height: 300px;
     object-fit: contain; 
     border-radius: 5px;
-    background-color: #1e1e1e; /* Add a background for letterboxing */
+    background-color: #1e1e1e; 
 }
 
 .title-card h2 {
     margin-top: 10px;
     font-size: 1.1em;
     color: #86fccb;
-    min-height: 48px; /* Give titles a consistent height */
+    min-height: 48px; 
 }
 
-/* From Uiverse.io by Rodrypaladin */ 
-.loader {
+/* --- LOADER AND ERROR STYLES --- */
+.loader-container {
+    position: relative;
+    height: 60px;
+}
+#loader {
   width: 50px;
   height: 50px;
   background-color: #86fccb;
@@ -189,18 +200,17 @@ h1 {
   box-shadow: -15px -15px 15px #e66b70, 15px -15px 15px #9bedcb, 15px 15px 15px #52dec2, -15px 15px 15px #9bedcb, -15px 0 15px #1874f6, 15px 0 15px #02e6ff;
   animation: rotate 2s infinite;
   transform: rotate(0) scale(0.8);
-   position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            /* display: none; */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none; /* Controlled by JS */
 }
 
 @keyframes rotate {
   0% {
     transform: rotate(360deg) scale(0.8);
   }
-
   50% {
     transform: rotate(0) scale(1.2);
   }
@@ -216,27 +226,22 @@ h1 {
   background: #EF665B;
   border-radius: 8px;
   box-shadow: 0px 0px 5px -3px #111;
-  margin: 20px auto; /* Centered below the search bar */
-  cursor: pointer;
+  margin: 20px auto;
 }
-
 .error__icon {
   width: 20px;
   height: 20px;
   transform: translateY(-2px);
   margin-right: 8px;
 }
-
 .error__icon path {
   fill: #fff;
 }
-
 .error__title {
   font-weight: 500;
   font-size: 14px;
   color: #fff;
 }
-
 .error__close {
     width: 20px;
     height: 20px;
@@ -246,54 +251,41 @@ h1 {
 .error__close path {
     fill: #fff;
 }
+
+/* --- MODAL STYLES --- */
 .modal-backdrop {
-    /* This is the magic part */
-    position: fixed; /* Pins the backdrop to the viewport */
-    top: 0;
-    left: 0;
-    width: 100%;      /* Makes it cover the full screen */
-    height: 100%;     /* Makes it cover the full screen */
-    z-index: 1000;    /* Ensures it's on top of everything else */
-
-    /* These lines center the content inside the backdrop */
-    background-color: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
- .modal-backdrop {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.85);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .modal-content {
     background-color: #181319;
     border-radius: 10px;
-    width: 90%;
+    border: 1px solid #86fccb;
+    width: 100%;
     max-width: 800px;
     max-height: 90vh;
     overflow-y: auto;
     display: flex;
-    flex-direction: column; /* Stack vertically on small screens */
+    flex-direction: column; 
     position: relative;
     padding: 20px;
-    /* THIS IS THE NEW LINE YOU ADDED */
-    box-shadow: 15px 15px 30px rgb(25, 25, 25),
-                -15px -15px 30px rgb(60, 60, 60);
+    box-shadow: 0px 0px 30px rgba(134, 252, 203, 0.4);
 }
 
 @media (min-width: 768px) {
     .modal-content {
-        flex-direction: row; /* Side-by-side on larger screens */
+        flex-direction: row; 
     }
 }
 
@@ -312,8 +304,8 @@ h1 {
 .modal-content img {
     width: 100%;
     max-width: 300px; 
-    height: 450px; /* Give it a fixed height for consistent layout */
-    object-fit: cover; /* This is the key fix */
+    height: auto;
+    object-fit: contain;
     border-radius: 8px;
     margin: 0 auto 20px; 
 }
@@ -344,12 +336,12 @@ h1 {
     color: #aaa;
     margin-bottom: 20px;
 }
-.trivia {
+.trivia, .cast-section, .watch-section {
     margin-top: 20px;
-    border-top: 1px solid #86fccb;
+    border-top: 1px solid #333;
     padding-top: 15px;
 }
-.trivia p {
+.trivia p, .cast-section p, .watch-section p {
     margin: 5px 0;
     color: #e0e0e0;
 }
@@ -357,28 +349,36 @@ h1 {
     color: #86fccb;
     margin-bottom: 10px;
 }
+
+/* Cast List Styles */
 .cast-list {
-    list-style: none;
+    list-style-type: none;
     padding: 0;
     margin: 0;
+    font-size: 0.9em;
+    color: #aaa;
 }
 .cast-list li {
-    background-color: #2a2a2a;
-    padding: 5px 10px;
-    border-radius: 4px;
-    margin-bottom: 5px;
-    font-size: 0.9em;
+    padding: 2px 0;
 }
 
+/* Where to Watch Styles */
 .provider-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 10px;
+    align-items: center;
+}
+.provider-item {
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    padding: 5px;
+    display: flex;
     align-items: center;
 }
 .provider-item img {
-    width: 50px;
-    height: 50px;
-    border-radius: 8px;
-    background-color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
 }
+
