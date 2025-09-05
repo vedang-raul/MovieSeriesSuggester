@@ -81,6 +81,7 @@ h1 {
     align-items: center;
     gap: 10px;
     color: #aaa;
+    transform: translateY(-35px);
 }
 .switch {
     position: relative;
