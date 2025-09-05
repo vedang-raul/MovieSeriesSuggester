@@ -152,31 +152,17 @@ input:checked + .slider:before {
 .title-card img {
     width: 100%;
     height: 300px;
-    object-fit: cover; /* This is the key fix */
+    object-fit: contain; 
     border-radius: 5px;
+    background-color: #1e1e1e; /* Add a background for letterboxing */
 }
 
 .title-card h2 {
     margin-top: 10px;
     font-size: 1.1em;
     color: #86fccb;
-    min-height: 48px; /* Ensure cards have a similar height */
+    min-height: 48px; /* Give titles a consistent height */
 }
-
-.title-card p {
-    font-size: 0.9em;
-    color: #aaa;
-}
-
-/* UPDATED: Absolute positioning with pixel control */
-/* .error-message {
-    color: #86fccb;
-    width: 100%;
-    text-align: center;
-    position: absolute;
-    right: 0;
-    top: -25px;
-} */
 
 /* From Uiverse.io by Rodrypaladin */ 
 .loader {
