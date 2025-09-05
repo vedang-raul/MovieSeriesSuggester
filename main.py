@@ -238,3 +238,65 @@ async def movie_credits(movie_id: int):
            raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
         except httpx.RequestError as exc:
            raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
+@app.get("/api/movie/watch/{movie_id}")
+async def watch_movie(movie_id : int):
+    if not TMDB_READ_ACCESS_TOKEN:
+        raise HTTPException(status_code=500,detail="TMDB read access token is not configured.")
+    url=f"{TMDB_API_URL}/movie/{movie_id}/watch/providers"
+    headers={
+        "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}",
+    }
+    params={
+        "language":"en-US"
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            response= await client.get(url,headers=headers,params=params)
+            response.raise_for_status()
+            data=response.json()
+            watch_providers = data.get("results", {}).get("IN", {})
+            flatrate_providers = watch_providers.get("flatrate", [])
+    
+            top_services = [
+            {
+                "name": provider.get('provider_name'),
+                "logo_path": provider.get('logo_path')
+            } 
+            for provider in flatrate_providers[:4]
+            ]
+            return {"providers": top_services}
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
+@app.get("/api/tv/watch/{tv_id}")
+async def watch_tv(tv_id : int):
+    if not TMDB_READ_ACCESS_TOKEN:
+        raise HTTPException(status_code=500,detail="TMDB read access token is not configured.")
+    url=f"{TMDB_API_URL}/tv/{tv_id}/watch/providers"
+    headers={
+        "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}",
+    }
+    params={
+        "language":"en-US"
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            response= await client.get(url,headers=headers,params=params)
+            response.raise_for_status()
+            data=response.json()
+            watch_providers = data.get("results", {}).get("IN", {})
+            flatrate_providers = watch_providers.get("flatrate", [])
+    
+            top_services = [
+            {
+                "name": provider.get('provider_name'),
+                "logo_path": provider.get('logo_path')
+            } 
+            for provider in flatrate_providers[:4]
+            ]
+            return {"providers": top_services}
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
