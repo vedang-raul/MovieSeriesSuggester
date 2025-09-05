@@ -8,8 +8,8 @@ const modalContainer = document.getElementById('modal-container');
 const searchTypeToggle = document.getElementById('search-type-toggle'); // The new toggle switch
 
 
-// const BaseUrl = "http://localhost:8000"   // For local testing, uncomment it when youre locally testing
-const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
+const BaseUrl = "http://localhost:8000"   // For local testing, uncomment it when youre locally testing
+// const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
 function showErr(message) {
     errorMessageDiv.innerHTML = `
         <div class="error">
@@ -174,11 +174,13 @@ async function fetchtitleDetails(titleId, searchType) {
     try {
         const detailsUrl = `${BaseUrl}/api/${searchType}/${titleId}`;
         const creditsUrl = `${BaseUrl}/api/${searchType}/${titleId}/credits`;
+        const watchtitleurl= `${BaseUrl}/api/${searchType}/watch/${titleId}`;
 
         // Use Promise.all to fetch both endpoints at the same time
         const [detailsResponse, creditsResponse] = await Promise.all([
             fetch(detailsUrl),
-            fetch(creditsUrl)
+            fetch(creditsUrl),
+            fetch(watchtitleurl)
         ]);
 
         if (!detailsResponse.ok || !creditsResponse.ok) {
@@ -189,7 +191,7 @@ async function fetchtitleDetails(titleId, searchType) {
         const credits = await creditsResponse.json();
         
         // Pass all data to the modal
-        displayModal(details, credits,searchType); 
+        displayModal(details, credits,searchType,watchtitleurl); 
     } catch (error) {
         console.error('Fetch details error:', error);
         showErr(error.message);
@@ -198,7 +200,7 @@ async function fetchtitleDetails(titleId, searchType) {
         resultsDiv.style.display = 'grid'; // Show results again
     }
 }
-function displayModal(details,credits,searchType) {
+function displayModal(details,credits,searchType,watchtitleurl) {
     const posterUrl = details.poster_path || 'https://placehold.co/500x750/1e1e1e/86fccb?text=No+Image';
 
     let detailsHtml = '';
@@ -245,6 +247,16 @@ function displayModal(details,credits,searchType) {
         });
         creditsHtml += '</ul></div>';
     }
+    let watchtitleHtml = '';
+    let watchlist = watchtitleurl; // Assume it's a proper array by default
+    if (watchlist.length > 0) {
+        watchtitleHtml += '<div class="watchtitle-section"><h3>Watch On</h3><ul class="watchtitle">';
+        watchlist.forEach(provider => {
+            watchtitleHtml += `<li>${provider}</li>`;
+        });
+        watchtitleHtml += '</ul></div>';
+    }
+
 
     modalContainer.innerHTML = `
         <div class="modal-backdrop">
