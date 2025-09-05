@@ -79,52 +79,67 @@ h1 {
 .toggle-container {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
     color: #aaa;
     transform: translateY(-35px);
 }
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 34px;
+.new-switch-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
+
+.label {
+  height: 50px;
+  width: 100px;
+  background-color: #333;
+  border-radius: 25px;
+  box-shadow: inset 0 0 5px 2px rgba(0, 0, 0, 0.5), 
+              0 5px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.4s;
 }
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #333;
-    transition: .4s;
+
+.label:hover {
+  transform: perspective(100px) rotateX(5deg) rotateY(-5deg);
 }
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 26px;
-    width: 26px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
+
+#search-type-toggle:checked ~ .label:hover {
+  transform: perspective(100px) rotateX(-5deg) rotateY(5deg);
 }
-input:checked + .slider {
-    background-color: #86fccb;
+
+#search-type-toggle {
+  display: none;
 }
-input:checked + .slider:before {
-    transform: translateX(26px);
+
+#search-type-toggle:checked ~ .label::before {
+  left: 55px;
+  background-color: #86fccb;
+  background-image: linear-gradient(315deg, #86fccb 0%, #a2ffe1 70%);
+  box-shadow: 0 2px 5px rgba(134, 252, 203, 0.4), 
+              5px 5px 10px rgba(0, 0, 0, 0.3);
+  transition: 0.4s;
 }
-.slider.round {
-    border-radius: 34px;
-}
-.slider.round:before {
-    border-radius: 50%;
+
+.label::before {
+  position: absolute;
+  content: "";
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  background-image: linear-gradient(
+    130deg,
+    #cccccc 10%,
+    #ffffff 11%,
+    #e0e0e0 62%
+  );
+  left: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 10px 10px 10px rgba(0, 0, 0, 0.3);
+  transition: 0.4s;
 }
 
 #results {
