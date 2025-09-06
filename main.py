@@ -2,7 +2,7 @@
 
 import os
 import httpx
-import asyncio
+import random
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -30,6 +30,48 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# async def movie_detail_helper(movie_id):
+#     if not TMDB_READ_ACCESS_TOKEN:
+#         raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN key is not configured.")
+#     det_url= f"{TMDB_API_URL}/movie/{movie_id}"
+#     headers={
+#         "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}",
+#         "accept": "application/json"
+#     }
+#     params={
+#         "language": "en-US"
+#     } 
+#     async with httpx.AsyncClient() as client:
+#         try:
+        
+#             response = await client.get(det_url,headers=headers,params=params)
+#             response.raise_for_status()
+#             data= response.json()
+#             genres=", ".join([genre["name"] for genre in data.get("genres",[])])  #it appends genres with a comma and if nothing is there in genres it returns an empty list
+#             budget=f"${data.get("budget",0):,}" if data.get("budget") else "N/A"  #adds a $ and a comma in appropriate places if budget is there else returns N/A
+#             revenue=f"${data.get("revenue", 0):,}" if data.get("revenue") else "N/A" #adds a $ and a comma in appropriate places if revenue is there else returns N/A
+
+#             details={
+#                 "title": data.get("title"),
+#                 "overview": data.get("overview"),
+#                 "release_date": data.get("release_date"),
+#                 "genres": genres,
+#                 "runtime": f"{data.get('runtime')} minutes" if data.get("runtime") else "N/A",
+#                 "budget": budget,
+#                 "revenue": revenue,
+#                 "vote_average": data.get("vote_average"),
+#                 "vote_count": data.get("vote_count"),
+#                 "tagline": data.get("tagline"),
+#                 "poster_path": f"https://image.tmdb.org/t/p/w500{data.get('poster_path')}" if data.get("poster_path") else None,
+                
+
+#             }
+#             return details
+            
+#         except httpx.HTTPStatusError as exc:
+#            raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
+#         except httpx.RequestError as exc:
+#            raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
 
 # --- API Endpoints ---
 
@@ -120,7 +162,7 @@ async def movie_detail(movie_id: int):
     }
     params={
         "language": "en-US"
-    }
+    } 
     async with httpx.AsyncClient() as client:
         try:
         
@@ -302,3 +344,60 @@ async def watch_tv(tv_id : int):
             raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
         except httpx.RequestError as exc:
             raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
+@app.get("/api/surprise_me/movie")
+async def surprise_movie():
+    if not TMDB_READ_ACCESS_TOKEN:
+        raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN key is not configured.")
+    url= f"{TMDB_API_URL}/movie/top_rated"
+    headers = {
+        "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}"
+    }
+    params={
+        "language": "en-US",
+        "page":random.randint(1,10)
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url=url,headers=headers,params=params)
+            response.raise_for_status()
+            data= response.json()
+            results_tmdb=data.get("results",[])
+            surprise_movie = results_tmdb[random.randint(1,20)]
+            id = surprise_movie.get("id")
+            results=await movie_detail(id)
+
+            
+
+            return {"results":results}
+        except httpx.HTTPStatusError as exc:
+              raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
+        except httpx.RequestError as exc:
+              raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
+@app.get("/api/surprise_me/tv")
+async def surprise_tv():
+    if not TMDB_READ_ACCESS_TOKEN:
+        raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN not configured.")
+    url=f"{TMDB_API_URL}/tv/top_rated"
+    headers={
+        "Authorization":f"Bearer {TMDB_READ_ACCESS_TOKEN}"
+    }
+    params={
+        "language":"en-US",
+        "page":random.randint(1,10)
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            response= await client.get(url=url,headers=headers,params=params)
+            response.raise_for_status()
+            data=response.json()
+            results_tmdb=data.get("results",[])
+            surprise_tv=results_tmdb[random.randint(1,20)]
+            id=surprise_tv.get("id")
+            results=await tv_detail(id)
+            return{"results":results}
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=503,detail=f"TMDB API server error: {exc}")
+
