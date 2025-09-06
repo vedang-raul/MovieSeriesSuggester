@@ -141,6 +141,7 @@ async def movie_detail(movie_id: int):
                 "revenue": revenue,
                 "vote_average": data.get("vote_average"),
                 "vote_count": data.get("vote_count"),
+                "tagline": data.get("tagline"),
                 "poster_path": f"https://image.tmdb.org/t/p/w500{data.get('poster_path')}" if data.get("poster_path") else None,
                 
 
@@ -183,6 +184,7 @@ async def tv_detail(tv_id: int):
                 "vote_average": data.get("vote_average"),
                 "vote_count": data.get("vote_count"),
                 "creators": creators,
+                "tagline": data.get("tagline"),
                 "poster_path": f"https://image.tmdb.org/t/p/w500{data.get('poster_path')}" if data.get("poster_path") else None
 
             }

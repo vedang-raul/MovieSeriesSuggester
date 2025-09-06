@@ -150,23 +150,6 @@ function displayResults(titles,searchType) {
         resultsDiv.appendChild(titleCard);
     });
 }
-// async function fetchtitleDetails(titleId,searchType) {
-//     loader.innerHTML = '<div class="loading-spinner"></div>';
-//     try {
-//         const response = await fetch(`${BaseUrl}/api/${searchType}/${titleId}`);
-//         if (!response.ok) {
-//             const errorData = await response.json();
-//             throw new Error(errorData.detail || 'Could not fetch details.');
-//         }
-//         const details = await response.json();
-//         displayModal(details,searchType,cast); // Call the function to show the pop-up
-//     } catch (error) {
-//         console.error('Fetch details error:', error);
-//         showErr(error.message);
-//     } finally {
-//         loader.innerHTML = '';
-//     }
-// }
 async function fetchtitleDetails(titleId, searchType) {
     loader.style.display = 'block';
     resultsDiv.style.display = 'none'; // Hide results while modal is potentially loading
@@ -203,8 +186,15 @@ async function fetchtitleDetails(titleId, searchType) {
 }
 function displayModal(details,credits,searchType,watchproviders) {
     const posterUrl = details.poster_path || 'https://placehold.co/500x750/1e1e1e/86fccb?text=No+Image';
+    const posterAreaHtml = `
+        <div class="modal-poster-area">
+            <img src="${posterUrl}" alt="Poster for ${details.title || details.original_name}">
+            ${details.tagline ? `<p class="tagline"><em><b>"${details.tagline}"</b></em></p>` : ''}
+        </div>
+    `;
 
     let detailsHtml = '';
+    
 
     if (searchType === 'movie') {
         detailsHtml = `
@@ -222,8 +212,18 @@ function displayModal(details,credits,searchType,watchproviders) {
             <p><strong>Episodes:</strong> ${details.number_of_episodes}</p>
             <p><strong>Status:</strong> ${details.status}</p>
             <p><strong>Created By:</strong> ${details.creators}</p>
+
         `;
     }
+    let triviaHtml = '';
+    if (details.tagline){
+        triviaHtml = `
+        <divclass="trivia">
+        <p><em>"${details.tagline}"</em></p>
+        </div>
+        `;
+    }
+    
     let creditsHtml = '';
     let castList = credits; // Assume it's a proper array by default
 
@@ -268,10 +268,14 @@ function displayModal(details,credits,searchType,watchproviders) {
         <div class="modal-backdrop">
             <div class="modal-content">
                 <button class="modal-close">&times;</button>
-                <img src="${posterUrl}" alt="Poster for ${details.title || details.original_name}">
+                ${posterAreaHtml}
+                
                 <div class="modal-info">
+                
                     <h2>${details.title || details.original_name}</h2>
+                   
                     <p>${details.overview || 'No overview available.'}</p>
+                    
                     <div class="trivia">
                         ${detailsHtml}
                     </div>
