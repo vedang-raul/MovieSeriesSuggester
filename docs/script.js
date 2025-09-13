@@ -294,4 +294,26 @@ function displayModal(details,credits,searchType,watchproviders) {
         if (e.target === e.currentTarget) closeModal();
     });
 }
+async function fetchSurprise() {
+    loader.style.display = 'block';
+    resultsDiv.innerHTML = '';
+    errorMessageDiv.innerHTML = '';
+
+    try {
+        const searchType = searchTypeToggle.checked ? 'tv' : 'movie';
+        const url = `${BaseUrl}/api/surprise/${searchType}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Could not get a surprise.');
+        }
+        const surpriseData = await response.json();
+        // A surprise result is a single item, so we directly fetch its details
+        fetchtitleDetails(surpriseData.id, surpriseData.media_type);
+    } catch (error) {
+        console.error('Surprise fetch error:', error);
+        showErr(error.message);
+        loader.style.display = 'none';
+    }
+}
 document.addEventListener('DOMContentLoaded', Pop_movies); 

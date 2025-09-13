@@ -402,4 +402,25 @@ body {
     height: 40px;
     border-radius: 5px;
 }
+.surprise-container {
+    text-align: center;
+    margin-bottom: 40px;
+}
 
+.surprise-btn {
+    background-color: transparent;
+    border: 2px solid #86fccb;
+    color: #86fccb;
+    padding: 10px 20px;
+    font-family: "Comfortaa", sans-serif;
+    font-size: 1rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.surprise-btn:hover {
+    background-color: #86fccb;
+    color: #181319;
+    box-shadow: 0 0 15px rgba(134, 252, 203, 0.5);
+}
