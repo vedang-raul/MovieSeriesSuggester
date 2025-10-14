@@ -9,7 +9,7 @@ const searchTypeToggle = document.getElementById('search-type-toggle'); // The n
 const surpriseBtn = document.getElementById('surpriseBtn'); // The new surprise button
 
 const BaseUrl = "http://localhost:8000";   // For local testing, uncomment it when youre locally testing
-// const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
+const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
 // const BaseUrl="https://movieseriessuggester.onrender.com"
 function showErr(message) {
     errorMessageDiv.innerHTML = `
