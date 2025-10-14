@@ -6,11 +6,11 @@ const loader= document.getElementById('loader');
 const errorMessageDiv = document.getElementById('error-message');
 const modalContainer = document.getElementById('modal-container');
 const searchTypeToggle = document.getElementById('search-type-toggle'); // The new toggle switch
+const surpriseBtn = document.getElementById('surpriseBtn'); // The new surprise button
 
-
-// const BaseUrl = "http://localhost:8000"   // For local testing, uncomment it when youre locally testing
+const BaseUrl = "http://localhost:8000";   // For local testing, uncomment it when youre locally testing
 // const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
-const BaseUrl="https://movieseriessuggester.onrender.com"
+// const BaseUrl="https://movieseriessuggester.onrender.com"
 function showErr(message) {
     errorMessageDiv.innerHTML = `
         <div class="error">
@@ -37,6 +37,7 @@ function showErr(message) {
 
 // --- 2. Add an event listener for the button click ---
 searchBtn.addEventListener('click', searchtitles);
+surpriseBtn.addEventListener('click', fetchSurprise);
 
 // Allow pressing 'Enter' in the input field to trigger a search
 titleInput.addEventListener('keyup', function(event) {
@@ -301,20 +302,30 @@ async function fetchSurprise() {
     errorMessageDiv.innerHTML = '';
 
     try {
-        const searchType = searchTypeToggle.checked ? 'tv' : 'movie';
-        const url = `${BaseUrl}/api/surprise/${searchType}`;
+        const searchType = 'movie'; 
+        const url = `${BaseUrl}/api/surprise_me/${searchType}`;
         const response = await fetch(url);
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.detail || 'Could not get a surprise.');
         }
-        const surpriseData = await response.json();
-        // A surprise result is a single item, so we directly fetch its details
-        fetchtitleDetails(surpriseData.id, surpriseData.media_type);
+
+        const surpriseData = await response.json(); // surpriseData is { results: 975 }
+        const surpriseId = surpriseData.results;   // surpriseId is now 975
+
+        // Check if the ID is a valid number
+        if (!surpriseId || typeof surpriseId !== 'number') {
+            throw new Error("Surprise ID from server was invalid.");
+        }
+        
+        // Pass the ID directly to the function that gets all the details
+        fetchtitleDetails(surpriseId, searchType);
+
     } catch (error) {
         console.error('Surprise fetch error:', error);
         showErr(error.message);
         loader.style.display = 'none';
+        resultsDiv.style.display = 'grid';
     }
 }
 document.addEventListener('DOMContentLoaded', Pop_movies); 

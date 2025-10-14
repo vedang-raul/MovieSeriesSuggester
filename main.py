@@ -173,7 +173,8 @@ async def movie_detail(movie_id: int):
             budget=f"${data.get("budget",0):,}" if data.get("budget") else "N/A"  #adds a $ and a comma in appropriate places if budget is there else returns N/A
             revenue=f"${data.get("revenue", 0):,}" if data.get("revenue") else "N/A" #adds a $ and a comma in appropriate places if revenue is there else returns N/A
 
-            details={
+            details={\
+                "id": data.get("id"),
                 "title": data.get("title"),
                 "overview": data.get("overview"),
                 "release_date": data.get("release_date"),
@@ -365,11 +366,11 @@ async def surprise_movie():
             results_tmdb=data.get("results",[])
             surprise_movie = results_tmdb[random.randint(1,20)]
             id = surprise_movie.get("id")
-            results=await movie_detail(id)
+            result = id
 
             
 
-            return {"results":results}
+            return {"results":result}
         except httpx.HTTPStatusError as exc:
               raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
         except httpx.RequestError as exc:
@@ -395,7 +396,7 @@ async def surprise_tv():
             surprise_tv=results_tmdb[random.randint(1,20)]
             id=surprise_tv.get("id")
             results=await tv_detail(id)
-            return{"results":results}
+            return results
         except httpx.HTTPStatusError as exc:
             raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
         except httpx.RequestError as exc:
