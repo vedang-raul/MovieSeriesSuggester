@@ -5,7 +5,7 @@ const resultsDiv = document.getElementById('results');
 const loader= document.getElementById('loader');
 const errorMessageDiv = document.getElementById('error-message');
 const modalContainer = document.getElementById('modal-container');
-const searchTypeToggle = document.getElementById('search-type-toggle'); // The new toggle switch // The new surprise button
+const searchTypeToggle = document.getElementById('search-type-toggle'); // The new toggle switch 
 const logo = document.querySelector('.logo');
 const resultsTitle = document.querySelector('#results-title');
 const surpriseBtn = document.querySelector('.surprise-btn-slide');
@@ -13,8 +13,8 @@ const surpriseBtn = document.querySelector('.surprise-btn-slide');
 
 
 
-const BaseUrl = "http://localhost:8000";   // For local testing, uncomment it when youre locally testing
-// const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
+// const BaseUrl = "http://localhost:8000";   // For local testing, uncomment it when youre locally testing
+const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
 // const BaseUrl="https://movieseriessuggester.onrender.com"
 logo.addEventListener('click', () => {
     resultsTitle.textContent = 'Trending Now';
