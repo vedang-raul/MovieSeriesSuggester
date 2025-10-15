@@ -104,12 +104,35 @@ async def search_movie(query: str):
             raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API{exc.response.text}") #Take the error msg sent from TMDB and show it to user
         except httpx.RequestError as exc: #This block catches errors when you couldn't connect to the API at all
             raise HTTPException(status_code=503,detail=f"Error connecting to TMDB API server{exc}")
-@app.get("/api/popular")
+@app.get("/api/popular/movie")
 async def show_pop_movies():
     # This endpoint fetches popular movies from TMDB
     if not TMDB_READ_ACCESS_TOKEN:
         raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN key is not configured.")
     search_url= f"{TMDB_API_URL}/movie/popular"
+    headers = {
+        "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}",
+        "accept": "application/json"
+    }
+    params={
+        "language": "en-US",
+        "page":1
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            response= await client.get(search_url,headers=headers,params=params)
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(status_code=exc.response.status_code,detail=f"Error connecting to the TMDB API: {exc.response.text}")
+        except httpx.RequestError as exc:
+            raise HTTPException(status_code=503,detail=f"Error connecting to the TMDB API server: {exc}")
+@app.get("/api/popular/tv")
+async def show_pop_tv():
+    # This endpoint fetches popular movies from TMDB
+    if not TMDB_READ_ACCESS_TOKEN:
+        raise HTTPException(status_code=500,detail="TMDB READ ACCESS TOKEN key is not configured.")
+    search_url= f"{TMDB_API_URL}/tv/popular"
     headers = {
         "Authorization": f"Bearer {TMDB_READ_ACCESS_TOKEN}",
         "accept": "application/json"
@@ -395,8 +418,8 @@ async def surprise_tv():
             results_tmdb=data.get("results",[])
             surprise_tv=results_tmdb[random.randint(1,20)]
             id=surprise_tv.get("id")
-            results=await tv_detail(id)
-            return results
+            result=id
+            return {"results":result}
         except httpx.HTTPStatusError as exc:
             raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API: {exc.response.text}")
         except httpx.RequestError as exc:
