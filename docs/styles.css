@@ -1,7 +1,17 @@
+:root {
+  /* This is our default "Movie" theme color */
+  --primary-accent: #e66b70; 
+}
+
+/* WHEN the body has the class "theme-tv", this rule will activate */
+body.theme-tv {
+  /* It overrides the variable with the "TV Show" theme color */
+  --primary-accent: #86fccb;
+}
 body {
      font-family: "Raleway", sans-serif;
     background-color: #181319;
-    color: #e0e0e0;
+    color: var(--primary-accent);
     margin: 0;
     padding: 20px;
     display: flex;
@@ -58,15 +68,15 @@ body {
     font-size: 14px;
     letter-spacing: 2px;
     background-color: #181319; 
-    color: #e0e0e0; 
+    color: var(--primary-accent); 
     box-sizing: border-box;
     font-family: "Comfortaa", sans-serif; /* Ensure font is consistent */
 }
 
 .input:focus {
     outline: none;
-    border: 2.5px solid #86fccb; 
-    box-shadow: -5px -5px 0px #86fccb; 
+    border: 2.5px solid var(--primary-accent);
+    box-shadow: -5px -5px 0px var(--primary-accent);
 }
 
 .input-container:hover > .icon {
@@ -163,6 +173,17 @@ body {
     gap: 20px;
     position: relative;
 }
+/* Add this to your CSS, maybe near the results grid styles */
+#results-title {
+  color: var(--primary-accent); /* Your primary accent color */
+  text-align: left;
+  font-family: "Raleway", sans-serif;
+  font-weight: 250;
+  font-size: 25px;
+  margin-bottom: 20px; /* Space between title and results */
+  padding-bottom: 10px; /* Space between text and the border */
+  border-bottom: 2px solid #333; /* A subtle separator line */
+}
 
 .title-card {
     background-color: #1e1e1e;
@@ -189,7 +210,7 @@ body {
 .title-card h2 {
     margin-top: 10px;
     font-size: 1.1em;
-    color: #86fccb;
+    color: var(--primary-accent);
     min-height: 48px; 
 }
 
@@ -275,7 +296,7 @@ body {
 .modal-content {
     background-color: #181319;
     border-radius: 10px;
-    border: 1px solid #86fccb;
+    border: 1px solid var(--primary-accent);
     width: 100%;
     max-width: 800px;
     max-height: 90vh;
@@ -348,7 +369,7 @@ body {
 }
 
 .modal-info h2 {
-    color: #86fccb;
+    color: var(--primary-accent);
     margin-top: 0;
     text-align: left;
 }
@@ -366,7 +387,7 @@ body {
 }
 
 .cast-section h3, .watch-section h3 {
-    color: #86fccb;
+    color: var(--primary-accent);
     margin-bottom: 10px;
 }
 
@@ -402,4 +423,89 @@ body {
     height: 40px;
     border-radius: 5px;
 }
+body.theme-tv .surprise-btn-slide {
+  /* When the TV theme is on, flip c1 to the Movie color */
+  color: #e66b70;
+}
+.surprise-btn-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  color: #86fccb; 
+  text-shadow: 0 0 2px black;
 
+  cursor: pointer;
+  border: solid 2px #181319; /* Dark border */
+  letter-spacing: 1px;
+  font-weight: 600;
+  font-size: 17px;
+  font-family: "Raleway", sans-serif;
+  /* box-shadow: -5px -5px 15px var(--primary-accent); */
+  background-color: var(--primary-accent); /* Hooked into your theme! */
+  box-shadow: 0 0 0 2px black;
+  border: None;
+  z-index: 1;
+  border-radius: 50px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s ease;
+  min-width: 250px; /* Lock the width to prevent resizing */
+}
+
+.surprise-btn-slide:active {
+  transform: scale(0.98);
+  transition: all 100ms ease;
+}
+
+.surprise-btn-slide svg {
+  transition: all 0.5s ease;
+  z-index: 2;
+}
+
+.surprise-btn-slide .play {
+  transition: all 0.5s ease;
+  transition-delay: 300ms;
+}
+
+.surprise-btn-slide:hover svg {
+  transform: scale(3) translate(50%);
+}
+
+.surprise-btn-slide .now {
+  position: absolute;
+  left: 0;
+  transform: translateX(-100%);
+  transition: all 0.5s ease;
+  z-index: 2;
+}
+
+.surprise-btn-slide:hover .now {
+  transform: translateX(100%); /* Adjusted for better centering */
+  transition-delay: 300ms;
+}
+
+.surprise-btn-slide:hover .play {
+  transform: translateX(200%);
+  transition-delay: 300ms;
+}
+.button-wrapper {
+  
+  display: flex;
+  justify-content: center; /* This is for horizontal centering of the button */
+  margin-top: 40px;      /* Adds some space above the button */
+  margin-bottom: 40px;   /* Adds some space below the button */
+}
+.gradient-border-wrap {
+  position: relative;
+  z-index: 0;
+  border-radius: 50px; /* Rounding happens here */
+  overflow: hidden;
+  padding: 4px; /* This is the border thickness */
+  background: linear-gradient(45deg, #e66b70, #86fccb);
+}
+.logo {
+  /* ... your other logo styles are here ... */
+  cursor: pointer; /* This is the line to add */
+}

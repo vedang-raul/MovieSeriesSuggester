@@ -5,11 +5,24 @@ const resultsDiv = document.getElementById('results');
 const loader= document.getElementById('loader');
 const errorMessageDiv = document.getElementById('error-message');
 const modalContainer = document.getElementById('modal-container');
-const searchTypeToggle = document.getElementById('search-type-toggle'); // The new toggle switch
+const searchTypeToggle = document.getElementById('search-type-toggle'); // The new toggle switch // The new surprise button
+const logo = document.querySelector('.logo');
+const resultsTitle = document.querySelector('#results-title');
+const surpriseBtn = document.querySelector('.surprise-btn-slide');
 
 
-// const BaseUrl = "http://localhost:8000"   // For local testing, uncomment it when youre locally testing
-const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
+
+
+const BaseUrl = "http://localhost:8000";   // For local testing, uncomment it when youre locally testing
+// const BaseUrl =  "https://cinematch-ptzm.onrender.com"; // for live deployment
+// const BaseUrl="https://movieseriessuggester.onrender.com"
+logo.addEventListener('click', () => {
+    resultsTitle.textContent = 'Trending Now';
+    titleInput.value = ''; // Clear the search bar
+    searchTypeToggle.checked = false;
+    // When clicked, reload the entire page
+    location.reload();
+});
 function showErr(message) {
     errorMessageDiv.innerHTML = `
         <div class="error">
@@ -36,6 +49,7 @@ function showErr(message) {
 
 // --- 2. Add an event listener for the button click ---
 searchBtn.addEventListener('click', searchtitles);
+surpriseBtn.addEventListener('click', fetchSurprise);
 
 // Allow pressing 'Enter' in the input field to trigger a search
 titleInput.addEventListener('keyup', function(event) {
@@ -74,6 +88,7 @@ async function searchtitles() {
         }
 
         const data = await response.json();
+        resultsTitle.textContent = `Results for "${query}"`; 
         displayResults(data.results,searchType);
 
     } catch (error) {
@@ -84,12 +99,23 @@ async function searchtitles() {
         loader.style.display = 'none'; // Hide loader when done
     }
 }
-async function Pop_movies(){
+searchTypeToggle.addEventListener('change', () => {
+  Popular(); 
+
+  if (searchTypeToggle.checked) {
+    document.body.classList.add('theme-tv');
+  } else {
+    document.body.classList.remove('theme-tv');
+  }
+})
+async function Popular(){
     loader.style.display = 'block';
     resultsDiv.innerHTML = '';
+    
     try
     {
-    const url = `${BaseUrl}/api/popular`;
+    const searchType = searchTypeToggle.checked ? 'tv' : 'movie';
+    const url = `${BaseUrl}/api/popular/${searchType}`;
     const response= await fetch(url);
     if(!response.ok){
          const errorData = await response.json();
@@ -98,9 +124,11 @@ async function Pop_movies(){
   
     }
     const data = await response.json();
+    resultsTitle.textContent = searchType === 'tv' ? 'Trending TV Shows' : 'Trending Movies';
     // Call the display function with the fetched data
-    displayResults(data.results,searchType='movie');
-}catch (error) {
+    displayResults(data.results,searchType);
+    }
+    catch (error) {
         console.error('Fetch error:', error);
         // Display a user-friendly error message on the page
         showErr(`Oops !${error.message}`);
@@ -294,4 +322,44 @@ function displayModal(details,credits,searchType,watchproviders) {
         if (e.target === e.currentTarget) closeModal();
     });
 }
-document.addEventListener('DOMContentLoaded', Pop_movies); 
+async function fetchSurprise() {
+    loader.style.display = 'block';
+    errorMessageDiv.innerHTML = '';
+
+    try {
+        const searchType = searchTypeToggle.checked ? 'tv' : 'movie';
+        const url = `${BaseUrl}/api/surprise_me/${searchType}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Could not get a surprise.');
+        }
+
+        const surpriseData = await response.json(); // surpriseData is { results: 975 }
+        const surpriseId = surpriseData.results;   // surpriseId is now 975
+
+        // Check if the ID is a valid number
+        if (!surpriseId || typeof surpriseId !== 'number') {
+            throw new Error("Surprise ID from server was invalid.");
+        }
+        
+        // Pass the ID directly to the function that gets all the details
+        fetchtitleDetails(surpriseId, searchType);
+
+    } catch (error) {
+        console.error('Surprise fetch error:', error);
+        showErr(error.message);
+        loader.style.display = 'none';
+        resultsDiv.style.display = 'grid';
+    }
+}
+// surpriseBtn.addEventListener('mouseenter', () => {
+//   surpriseBtnText.textContent = 'Surprise!';
+// });
+
+// // When the mouse MOVES AWAY from the button
+// surpriseBtn.addEventListener('mouseleave', () => {
+//   surpriseBtnText.textContent = 'Feeling lucky?';
+// });
+
+document.addEventListener('DOMContentLoaded', Popular); 
