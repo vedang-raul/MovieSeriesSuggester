@@ -425,7 +425,7 @@ body {
 }
 body.theme-tv .surprise-btn-slide {
   /* When the TV theme is on, flip c1 to the Movie color */
-  color: #e66b70;
+  color: #86fccb;
 }
 .surprise-btn-slide {
   display: flex;
@@ -433,7 +433,7 @@ body.theme-tv .surprise-btn-slide {
   justify-content: center;
   gap: 10px;
   padding: 20px;
-  color: #86fccb; 
+  color: #e66b70; 
   text-shadow: 0 0 2px black;
 
   cursor: pointer;
@@ -443,7 +443,7 @@ body.theme-tv .surprise-btn-slide {
   font-size: 17px;
   font-family: "Raleway", sans-serif;
   /* box-shadow: -5px -5px 15px var(--primary-accent); */
-  background-color: var(--primary-accent); /* Hooked into your theme! */
+  background-color: #181319; /* Hooked into your theme! */
   box-shadow: 0 0 0 2px black;
   border: None;
   z-index: 1;
