@@ -77,7 +77,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    """ A simple root endpoint to check if the server is running. """
+    #A simple root endpoint to check if the server is running.
     return {"status": "Movie Suggester is running!"}
 
 
@@ -99,7 +99,7 @@ async def search_movie(query: str):
             response = await client.get(search_url,headers=headers,params=params) #This is the main event, this is where we send the request to 
                                                                   #the API for the movie. using search_url and params
             response.raise_for_status()  # Raise an error for bad responses
-            return response.json()  #This line parses (coverts kinda) the response to JSON format and returns it
+            return response.json()  #This line parses (converts kinda) the response to JSON format and returns it
         except httpx.HTTPStatusError as exc: #This block catches erros when you successfully connected to the API but the API rejected your request
             raise HTTPException(status_code=exc.response.status_code,detail=f"Error from TMDB API{exc.response.text}") #Take the error msg sent from TMDB and show it to user
         except httpx.RequestError as exc: #This block catches errors when you couldn't connect to the API at all
@@ -237,7 +237,7 @@ async def tv_detail(tv_id: int):
             response.raise_for_status()
             data= response.json()
             genres=", ".join([genre["name"] for genre in data.get("genres",[])])  #it appends genres with a comma and if nothing is there in genres it returns an empty list
-            creators=", ".join([creator["name"] for creator in data.get("created_by",[])])  #it appends genres with a comma and if nothing is there in genres it returns an empty list
+            creators=", ".join([creator["name"] for creator in data.get("created_by",["Not available"])])  #it appends genres with a comma and if nothing is there in genres it returns an empty list
             details={
                 "original_name": data.get("original_name"),
                 "overview": data.get("overview"),
@@ -378,7 +378,7 @@ async def surprise_movie():
     }
     params={
         "language": "en-US",
-        "page":random.randint(1,10)
+        "page":random.randint(1,5)
     }
 
     async with httpx.AsyncClient() as client:
@@ -408,7 +408,8 @@ async def surprise_tv():
     }
     params={
         "language":"en-US",
-        "page":random.randint(1,10)
+        # "page":random.randint(1,2)
+        "page":1
     }
     async with httpx.AsyncClient() as client:
         try:
